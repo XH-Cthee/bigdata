@@ -1,7 +1,16 @@
 <template>
   <nav>
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
+<!--    <router-link to="/">Home</router-link> |-->
+<!--    <router-link to="/about">About</router-link> |-->
+    <router-link to="/myechart1">VideoLengthAnalysis</router-link> |
+<!--    <router-link to="/myechart3">Myechart3</router-link> |-->
+    <router-link to="/mywordcloud">FollowerAndLooktime</router-link> |
+<!--    <router-link to="/map">ChinaMap</router-link> |-->
+    <router-link to="/piechart">WatchnumpvAndRating</router-link> |
+    <router-link to="/scatterchart">UserBehaviorAnalysis</router-link> |
+<!--    <router-link to="/aqmap">Myaqmap</router-link> |-->
+    <router-link to="/NumpvAndRating">WatchnumpvAndRating</router-link> |
+<!--    <router-link to="/LooktimeAndFollower">LooktimeAndFollower</router-link> |-->
   </nav>
   <router-view/>
 </template>
