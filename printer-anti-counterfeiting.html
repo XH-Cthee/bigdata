@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>打印机/扫描仪产品防伪处理方案 — 全维度研究报告</title>
+<style>
+  :root {
+    --bg: #F7F8FA;
+    --card: #FFFFFF;
+    --text: #1A1A2E;
+    --sub: #6B7280;
+    --accent: #2563EB;
+    --accent2: #7C3AED;
+    --green: #059669;
+    --orange: #D97706;
+    --red: #DC2626;
+    --border: #E5E7EB;
+    --shadow: 0 1px 3px rgba(0,0,0,.06), 0 6px 24px rgba(0,0,0,.04);
+    --radius: 12px;
+    --radius-sm: 8px;
+    --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+  /* ═══ Navigation ═══ */
+  .nav-fixed {
+    position: fixed;
+    top: 0; left: 0;
+    width: 240px; height: 100vh;
+    background: #fff;
+    border-right: 1px solid var(--border);
+    z-index: 1000;
+    padding: 24px 16px;
+    overflow-y: auto;
+    box-shadow: 2px 0 20px rgba(0,0,0,.04);
+    transition: transform 0.35s ease;
+  }
+  .nav-fixed.hidden { transform: translateX(-100%); }
+  .nav-logo {
+    font-size: 1rem; font-weight: 700;
+    color: var(--accent); margin-bottom: 24px;
+    padding-bottom: 16px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .nav-list { list-style: none; }
+  .nav-list li { margin-bottom: 2px; }
+  .nav-list a {
+    display: block; padding: 9px 14px;
+    border-radius: 8px; font-size: .85rem;
+    color: var(--sub); text-decoration: none;
+    transition: 0.2s; font-weight: 500;
+    border-left: 3px solid transparent;
+  }
+  .nav-list a:hover {
+    background: #F0F4FF; color: var(--accent);
+    border-left-color: var(--accent);
+  }
+  .nav-list a.active {
+    background: #EFF6FF; color: var(--accent);
+    border-left-color: var(--accent); font-weight: 700;
+  }
+  .nav-toggle {
+    position: fixed; top: 16px; left: 256px;
+    z-index: 1010; width: 40px; height: 40px;
+    border-radius: 10px; background: #fff;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; transition: 0.35s ease;
+  }
+  .nav-toggle.shifted { left: 16px; }
+  .nav-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.3);
+    z-index: 999; display: none;
+  }
+  .nav-overlay.show { display: block; }
+  .main-content {
+    position: relative; z-index: 1;
+    margin-left: 0;
+    transition: margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .main-content.nav-expanded { margin-left: 256px; }
+
+  @media (max-width: 1024px) {
+    .nav-fixed { transform: translateX(-100%); }
+    .nav-fixed.mobile-open { transform: translateX(0); }
+    .nav-toggle { left: 16px; }
+    .main-content, .main-content.nav-expanded { margin-left: 0; transition: none; }
+  }
+
+  /* ═══ Invisible code flow diagram ═══ */
+  .flow-wrap {
+    background: #fff; border-radius: var(--radius);
+    padding: 32px; box-shadow: var(--shadow); border: 1px solid var(--border);
+    margin-top: 24px;
+  }
+  .flow-steps {
+    display: flex; gap: 0; align-items: stretch;
+    overflow-x: auto; padding-bottom: 8px;
+  }
+  .flow-step {
+    flex: 1; min-width: 140px; text-align: center; position: relative;
+    padding: 20px 12px;
+  }
+  .flow-step:not(:last-child)::after {
+    content: '→'; position: absolute;
+    right: -8px; top: 50%; transform: translateY(-50%);
+    font-size: 1.2rem; color: var(--accent); font-weight: 700;
+    z-index: 1;
+  }
+  .flow-num {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: linear-gradient(135deg, #2563EB, #7C3AED);
+    color: #fff; display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 1rem; margin-bottom: 10px;
+    box-shadow: 0 4px 12px rgba(37,99,235,.25);
+  }
+  .flow-label { font-weight: 700; font-size: .9rem; margin-bottom: 4px; }
+  .flow-desc { font-size: .8rem; color: var(--sub); line-height: 1.5; }
+  @media (max-width: 768px) {
+    .flow-steps { flex-direction: column; }
+    .flow-step:not(:last-child)::after {
+      content: '↓'; right: 50%; top: auto; bottom: -8px;
+      transform: translateX(50%);
+    }
+  }
+
+  .header {
+    background: linear-gradient(135deg, #1E3A5F 0%, #2563EB 40%, #7C3AED 100%);
+    color: #fff;
+    padding: 64px 24px 56px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    animation: bgShift 30s linear infinite;
+  }
+  @keyframes bgShift { to { transform: translate(-60px, -60px); } }
+  .header h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    position: relative;
+    z-index: 1;
+  }
+  .header p {
+    margin-top: 12px;
+    font-size: 1rem;
+    opacity: 0.85;
+    position: relative;
+    z-index: 1;
+  }
+  .header .badge-row {
+    margin-top: 24px;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+  }
+  .badge {
+    background: rgba(255,255,255,.15);
+    backdrop-filter: blur(8px);
+    padding: 6px 16px;
+    border-radius: 100px;
+    font-size: .85rem;
+    letter-spacing: .02em;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
+  section { margin-bottom: 56px; }
+
+  /* Section titles */
+  .sec-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .sec-title .num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: var(--accent);
+    color: #fff;
+    font-size: .95rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .sec-sub {
+    color: var(--sub);
+    margin-bottom: 28px;
+    font-size: .95rem;
+  }
+
+  /* Cards */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0,0,0,.08);
+  }
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .card-icon {
+    width: 44px; height: 44px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+  }
+  .card-icon.blue { background: #DBEAFE; color: #2563EB; }
+  .card-icon.purple { background: #EDE9FE; color: #7C3AED; }
+  .card-icon.green { background: #D1FAE5; color: #059669; }
+  .card-icon.orange { background: #FEF3C7; color: #D97706; }
+  .card-icon.red { background: #FEE2E2; color: #DC2626; }
+  .card-title { font-size: 1.08rem; font-weight: 700; }
+  .card-text { font-size: .9rem; color: var(--sub); line-height: 1.75; }
+  .card-tags { display: flex; gap: 6px; margin-top: 14px; flex-wrap: wrap; }
+  .tag {
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: .78rem;
+    font-weight: 600;
+  }
+  .tag.cost { background: #F0FDF4; color: #059669; }
+  .tag.level { background: #EFF6FF; color: #2563EB; }
+  .tag.tech { background: #FEF3C7; color: #D97706; }
+
+  /* Comparison table */
+  .table-wrap {
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    background: #fff;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .9rem;
+  }
+  thead { background: #F1F5F9; }
+  th {
+    padding: 14px 18px;
+    text-align: left;
+    font-weight: 700;
+    font-size: .85rem;
+    color: var(--text);
+    letter-spacing: .02em;
+  }
+  td { padding: 13px 18px; border-top: 1px solid var(--border); color: var(--sub); }
+  tr:hover td { background: #FAFBFC; }
+  .td-strong { font-weight: 700; color: var(--text); }
+  .td-accent { color: var(--accent); font-weight: 600; }
+
+  /* Tier comparison */
+  .tier-row { display: flex; gap: 20px; margin-top: 24px; overflow-x: auto; }
+  .tier-card {
+    flex: 1; min-width: 280px;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 32px 24px;
+    box-shadow: var(--shadow);
+    border: 2px solid var(--border);
+    position: relative;
+    transition: var(--transition);
+  }
+  .tier-card:hover { transform: translateY(-4px); }
+  .tier-card.basic { border-top: 4px solid #059669; }
+  .tier-card.advanced { border-top: 4px solid #2563EB; }
+  .tier-card.flagship { border-top: 4px solid #7C3AED; }
+  .tier-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: .78rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+  .tier-badge.basic { background: #D1FAE5; color: #059669; }
+  .tier-badge.advanced { background: #DBEAFE; color: #2563EB; }
+  .tier-badge.flagship { background: #EDE9FE; color: #7C3AED; }
+  .tier-card h3 { font-size: 1.15rem; margin-bottom: 6px; }
+  .tier-card .cost-label { font-size: .82rem; color: var(--sub); margin-bottom: 18px; }
+  .tier-card ul { list-style: none; }
+  .tier-card li {
+    padding: 8px 0;
+    border-bottom: 1px solid #F3F4F6;
+    font-size: .88rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .tier-card li .li-num {
+    width: 20px; height: 20px;
+    border-radius: 6px;
+    background: #F3F4F6;
+    color: var(--text);
+    font-size: .7rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* Tech explanation accordion */
+  .accordion { margin-top: 20px; }
+  .accordion-item {
+    background: var(--card);
+    border-radius: var(--radius);
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    transition: var(--transition);
+  }
+  .accordion-btn {
+    width: 100%;
+    padding: 20px 24px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+    font-family: inherit;
+    text-align: left;
+    gap: 12px;
+  }
+  .accordion-btn:hover { background: #FAFBFC; }
+  .accordion-btn .arrow {
+    transition: var(--transition);
+    font-size: 1.2rem;
+    color: var(--sub);
+    flex-shrink: 0;
+  }
+  .accordion-item.open .accordion-btn .arrow { transform: rotate(180deg); }
+  .accordion-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease, padding 0.4s ease;
+    padding: 0 24px;
+  }
+  .accordion-item.open .accordion-body {
+    max-height: 600px;
+    padding: 0 24px 24px;
+  }
+  .accordion-body .tech-desc {
+    color: var(--sub);
+    font-size: .9rem;
+    line-height: 1.8;
+    margin-bottom: 12px;
+  }
+  .accordion-body .tech-meta {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .tech-meta-item { font-size: .82rem; color: var(--sub); }
+  .tech-meta-item strong { color: var(--text); }
+
+  /* Roadmap */
+  .roadmap { position: relative; padding-left: 32px; }
+  .roadmap::before {
+    content: '';
+    position: absolute;
+    left: 12px; top: 0; bottom: 0;
+    width: 2px;
+    background: var(--border);
+  }
+  .roadmap-item {
+    position: relative;
+    margin-bottom: 32px;
+    padding: 24px;
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+  }
+  .roadmap-item::before {
+    content: '';
+    position: absolute;
+    left: -23px; top: 30px;
+    width: 10px; height: 10px;
+    background: var(--accent);
+    border-radius: 50%;
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 2px var(--accent);
+  }
+  .roadmap-item .phase { font-size: .78rem; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+  .roadmap-item h4 { font-size: 1.05rem; margin-bottom: 10px; }
+  .roadmap-item p { font-size: .88rem; color: var(--sub); }
+
+  /* ═══ Reference links ═══ */
+  .ref-link {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: .78rem; color: var(--accent); text-decoration: none;
+    font-weight: 500; transition: 0.2s;
+  }
+  .ref-link:hover { color: var(--accent2); text-decoration: underline; }
+  .ref-link.external::after {
+    content: ' ↗'; font-size: .7rem; opacity: 0.7;
+  }
+  .link-block {
+    margin-top: 12px; padding-top: 12px;
+    border-top: 1px dashed var(--border);
+    font-size: .78rem; line-height: 1.8;
+  }
+  .link-block a {
+    color: var(--accent); text-decoration: none;
+    font-weight: 500; transition: 0.2s;
+  }
+  .link-block a:hover { color: var(--accent2); text-decoration: underline; }
+
+  /* Animations */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.92); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  .anim-section {
+    animation: fadeInUp 0.6s ease both;
+  }
+  .anim-card {
+    animation: scaleIn 0.5s ease both;
+  }
+
+  /* Footer */
+  .footer {
+    background: #1E3A5F;
+    color: rgba(255,255,255,.7);
+    text-align: center;
+    padding: 32px;
+    font-size: .85rem;
+  }
+
+  @media (max-width: 768px) {
+    .header h1 { font-size: 1.5rem; }
+    .card-grid { grid-template-columns: 1fr; }
+    .tier-row { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<header class="header">
+  <h1>打印机/扫描仪产品防伪处理方案</h1>
+  <p>全维度研究报告 · 行业巨头实践 · 跨行业借鉴 · 分级实施路线图</p>
+  <div class="badge-row">
+    <span class="badge">🔐 一物一码</span>
+    <span class="badge">🔗 区块链溯源</span>
+    <span class="badge">🏷️ 全息标签</span>
+    <span class="badge">📡 NFC/RFID</span>
+    <span class="badge">🤖 AI微特征识别</span>
+    <span class="badge">🧬 量子加密</span>
+  </div>
+</header>
+
+<!-- ═══ NAVIGATION ═══ -->
+<nav class="nav-fixed" id="sideNav">
+  <div class="nav-logo">🔐 防伪方案报告</div>
+  <ul class="nav-list">
+    <li><a href="#sec1">1. 行业巨头现行方案</a></li>
+    <li><a href="#sec2">2. 跨行业成熟方案</a></li>
+    <li><a href="#sec3">3. 核心技术深度解析</a></li>
+    <li><a href="#sec4">4. 隐形码/暗码防伪技术</a></li>
+    <li><a href="#sec5">5. 分级推荐方案</a></li>
+    <li><a href="#sec6">6. 实施路线图</a></li>
+    <li><a href="#sec7">7. 防伪技术对比总表</a></li>
+    <li><a href="#sec8">8. UNISIMG定制化建议</a></li>
+  </ul>
+</nav>
+<button class="nav-toggle" id="navToggle" onclick="toggleNav()" aria-label="切换导航">☰</button>
+<div class="nav-overlay" id="navOverlay" onclick="toggleNav()"></div>
+
+<div class="main-content nav-expanded">
+<div class="container">
+
+<!-- ═══ SECTION 1: 行业巨头方案 ═══ -->
+<section class="anim-section" id="sec1" style="animation-delay: 0.05s">
+  <div class="sec-title"><span class="num">1</span> 行业巨头现行方案</div>
+  <p class="sec-sub">四大打印机品牌防伪体系一览 —— 多层次验证 + 消费者自验闭环</p>
+
+  <div class="card-grid">
+    <!-- HP -->
+    <div class="card anim-card" style="animation-delay: 0.1s">
+      <div class="card-header">
+        <div class="card-icon blue">🖨️</div>
+        <div>
+          <div class="card-title">惠普 HP</div>
+          <div style="font-size:.8rem;color:var(--sub)">四层防伪体系</div>
+        </div>
+      </div>
+      <div class="card-text">
+        <strong>① 全息安全标签</strong>：倾斜时墨滴→盾牌图标变换，"ORIGINAL"与"hp"标志相继浮现/消失<br>
+        <strong>② 二维码扫码验证</strong>：智能手机扫描 → 在线验证平台<br>
+        <strong>③ 产品本体多位置验证</strong>：碳粉盒背面+盖子+保护套封口三重独立验证<br>
+        <strong>④ CDI免费现场检验</strong>：中大规模交付可申请免费上门验货
+      </div>
+      <div class="card-tags">
+        <span class="tag tech">全息标签</span>
+        <span class="tag tech">二维码</span>
+        <span class="tag level">专业级</span>
+      </div>
+      <div class="link-block">
+        🔗 官方验证：
+        <a href="https://www.hp.com/cn-zh/cartridge/anti-counterfeit.html" target="_blank" rel="noopener">HP中国防伪措施页 →</a>
+        &nbsp;·&nbsp;
+        <a href="https://support.hp.com/cn-zh/document/ish_6679552-6679735-16" target="_blank" rel="noopener">HP防伪网站(碳粉盒) →</a>
+      </div>
+    </div>
+
+    <!-- Canon -->
+    <div class="card anim-card" style="animation-delay: 0.15s">
+      <div class="card-header">
+        <div class="card-icon purple">📷</div>
+        <div>
+          <div class="card-title">佳能 Canon</div>
+          <div style="font-size:.8rem;color:var(--sub)">三重验证 + 分品类策略</div>
+        </div>
+      </div>
+      <div class="card-text">
+        <strong>① 肉眼鉴别</strong>：防伪标签图案特征视觉比对<br>
+        <strong>② 二维码扫描</strong>：手机扫描外包装二维码直通验证<br>
+        <strong>③ 16位防伪码</strong>：揭开标签获取防伪码 → 电话(4008161365) / 短信(581#防伪码→106912114)<br>
+        按产品线（相机/镜头/打印机/扫描仪/耗材）建立独立防伪查询入口
+      </div>
+      <div class="card-tags">
+        <span class="tag tech">防伪码</span>
+        <span class="tag tech">短信验证</span>
+        <span class="tag level">企业级</span>
+      </div>
+      <div class="link-block">
+        🔗 官方验证：
+        <a href="https://www.canon.com.cn/supports/authenticity/index.html" target="_blank" rel="noopener">佳能中国防伪查询 →</a>
+        &nbsp;·&nbsp;
+        <a href="https://m.canon.com.cn/supports/authenticity/index3.html" target="_blank" rel="noopener">硒鼓耗材防伪验证 →</a>
+      </div>
+    </div>
+
+    <!-- Brother -->
+    <div class="card anim-card" style="animation-delay: 0.2s">
+      <div class="card-header">
+        <div class="card-icon green">🏷️</div>
+        <div>
+          <div class="card-title">兄弟 Brother</div>
+          <div style="font-size:.8rem;color:var(--sub)">序列号+全息双保险</div>
+        </div>
+      </div>
+      <div class="card-text">
+        <strong>① 机身唯一SN</strong>：打印测试页自动输出SN供核对<br>
+        <strong>② 7位ID全息标签</strong>：包装盒全息安全标签，在线输入ID验证<br>
+        <strong>③ 双通道验证</strong>：包装标签+机身SN交叉验证
+      </div>
+      <div class="card-tags">
+        <span class="tag tech">唯一SN</span>
+        <span class="tag tech">全息ID</span>
+        <span class="tag level">标准级</span>
+      </div>
+      <div class="link-block">
+        🔗 官方验证：
+        <a href="https://update.brother.co.jp/pbj/id/default.aspx" target="_blank" rel="noopener">Brother耗材真品验证(7位ID) →</a>
+        &nbsp;·&nbsp;
+        <a href="https://www.brother.cn/" target="_blank" rel="noopener">兄弟中国官网 →</a>
+      </div>
+    </div>
+
+    <!-- Epson -->
+    <div class="card anim-card" style="animation-delay: 0.25s">
+      <div class="card-header">
+        <div class="card-icon orange">🔍</div>
+        <div>
+          <div class="card-title">爱普生 Epson</div>
+          <div style="font-size:.8rem;color:var(--sub)">在线验证+SN精准追溯</div>
+        </div>
+      </div>
+      <div class="card-text">
+        <strong>① 在线防伪查询</strong>：官网/SaaS验证平台<br>
+        <strong>② 序列号SN验证</strong>：每台设备唯一识别码<br>
+        <strong>③ 精准召回能力</strong>：通过SN码精准定位受影响批次，实现高效主动召回
+      </div>
+      <div class="card-tags">
+        <span class="tag tech">在线验证</span>
+        <span class="tag tech">SN追溯</span>
+        <span class="tag level">智能级</span>
+      </div>
+      <div class="link-block">
+        🔗 官方验证：
+        <a href="https://www.epson.com.cn/" target="_blank" rel="noopener">爱普生中国官网 →</a>
+        &nbsp;·&nbsp;
+        <a href="https://m.epson.com.cn/a-b.html" target="_blank" rel="noopener">耗材防伪涂层验证 →</a>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:20px;padding:18px 24px;background:#FFF7ED;border-radius:var(--radius-sm);border-left:4px solid var(--orange);font-size:.88rem;color:var(--sub);">
+    <strong style="color:var(--text)">💡 共同特征</strong>：四大厂均采用"物理标签 + 数字验证 + 人工复核"三道防线叠加策略，无一依赖单一手段。全息标签是标配，消费者自验入口是必选项。
+    <br><span style="font-size:.78rem;color:var(--sub)">📚 行业参考：
+    <a href="https://www.hp.com/cn-zh/cartridge/anti-counterfeit.html" target="_blank" rel="noopener" style="color:var(--accent)">HP |</a>
+    <a href="https://www.canon.com.cn/supports/authenticity/index.html" target="_blank" rel="noopener" style="color:var(--accent)">佳能 |</a>
+    <a href="https://update.brother.co.jp/pbj/id/default.aspx" target="_blank" rel="noopener" style="color:var(--accent)">Brother |</a>
+    <a href="https://www.epson.com.cn/" target="_blank" rel="noopener" style="color:var(--accent)">爱普生</a>
+    </span>
+  </div>
+</section>
+
+<!-- ═══ SECTION 2: 跨行业方案 ═══ -->
+<section class="anim-section" id="sec2" style="animation-delay: 0.15s">
+  <div class="sec-title"><span class="num">2</span> 跨行业成熟方案参考</div>
+  <p class="sec-sub">白酒 · 医药 · 奢侈品 · 手机 —— 高价值行业的防伪智慧</p>
+
+  <div class="card-grid">
+    <!-- 白酒 -->
+    <div class="card anim-card" style="animation-delay: 0.18s">
+      <div class="card-header">
+        <div class="card-icon orange">🍶</div>
+        <div>
+          <div class="card-title">白酒行业</div>
+          <div style="font-size:.8rem;color:var(--sub)">五码合一+区块链+量子加密</div>
+        </div>
+      </div>
+      <div class="card-text">
+        <strong>技术栈</strong>：产品码→箱码→托盘码→终端码→消费者码，五级全链路打通<br>
+        <strong>成果</strong>：假货投诉率↓92%、窜货识别效率↑80%<br>
+        <strong>增值效应</strong>：扫码率18%→42%，扫码即会员，复购率↑28%
+      </div>
+      <div class="card-tags">
+        <span class="tag tech">五码合一</span>
+        <span class="tag tech">区块链</span>
+        <span class="tag cost">&lt;0.1元/件</span>
+      </div>
+      <div class="link-block">
+        📚 参考：
+        <a href="https://www.sohu.com/a/936575501_122206987" target="_blank" rel="noopener">五码合一+区块链溯源技术方案 →</a>
+      </div>
+    </div>
+
+    <!-- 医药 -->
+    <div class="card anim-card" style="animation-delay: 0.22s">
+      <div class="card-header">
+        <div class="card-icon red">💊</div>
+        <div>
+          <div class="card-title">医药行业</div>
+          <div style="font-size:.8rem;color:var(--sub)">UDI+RFID温控+生物DNA标记</div>
+        </div>
+      </div>
+      <div class="card-text">
+        <strong>技术</strong>：药品唯一标识(UDI)+RFID温控标签+生物DNA标记<br>
+        <strong>覆盖</strong>：全球TOP30药企28家采用<br>
+        <strong>效果</strong>：运输破损率1%→0.2%，DNA标记已降至&lt;0.1元/件
+      </div>
+      <div class="card-tags">
+        <span class="tag tech">UDI</span>
+        <span class="tag tech">RFID</span>
+        <span class="tag cost">DNA &lt;0.1元</span>
+      </div>
+      <div class="link-block">
+        📚 参考：
+        <a href="https://www.nmpa.gov.cn/" target="_blank" rel="noopener">国家药监局UDI专栏 →</a>
+      </div>
+    </div>
+
+    <!-- 奢侈品 -->
+    <div class="card anim-card" style="animation-delay: 0.26s">
+      <div class="card-header">
+        <div class="card-icon purple">💎</div>
+        <div>
+          <div class="card-title">奢侈品行业</div>
+          <div style="font-size:.8rem;color:var(--sub)">可变光栅+3D浮雕+AI微特征</div>
+        </div>
+      </div>
+      <div class="card-text">
+        <strong>防伪即美学</strong>：标签艺术化，成为品牌美学一部分<br>
+        <strong>AI视觉识别</strong>：准确率99.9%，微特征比对效率↑100倍<br>
+        <strong>NFC+AR</strong>：触碰即验证，验证即营销——防伪变品牌触点
+      </div>
+      <div class="card-tags">
+        <span class="tag tech">AI视觉</span>
+        <span class="tag tech">NFC</span>
+        <span class="tag tech">AR交互</span>
+      </div>
+    </div>
+
+    <!-- 手机 -->
+    <div class="card anim-card" style="animation-delay: 0.3s">
+      <div class="card-header">
+        <div class="card-icon blue">📱</div>
+        <div>
+          <div class="card-title">手机行业</div>
+          <div style="font-size:.8rem;color:var(--sub)">IMEI/SN+镭雕+在线验证</div>
+        </div>
+      </div>
+      <div class="card-text">
+        <strong>① IMEI/SN唯一标识</strong>：全球唯一硬件标识<br>
+        <strong>② 机身镭雕</strong>：出厂激光镭雕，不可擦除<br>
+        <strong>③ 包装+机身双验证</strong>：包装盒SN与机身SN交叉验证<br>
+        vivo/小米等品牌均提供在线真伪查询平台
+      </div>
+      <div class="card-tags">
+        <span class="tag tech">IMEI</span>
+        <span class="tag tech">镭雕</span>
+        <span class="tag level">基础级</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="link-block" style="margin-top:20px;padding:14px 20px;background:#FAFBFC;border-radius:var(--radius-sm);border:1px solid var(--border);">
+    📚 跨行业防伪综合参考：
+    <a href="https://www.sohu.com/a/936575501_122206987" target="_blank" rel="noopener">一物一码+五码合一方案 →</a>
+    &nbsp;·&nbsp;
+    <a href="https://m.chinairn.com/hyzx/20260416/163143315.shtml" target="_blank" rel="noopener">中研网防伪技术趋势 →</a>
+    &nbsp;·&nbsp;
+    <a href="http://www.ctaac.org.cn/" target="_blank" rel="noopener">中国防伪行业协会 →</a>
+  </div>
+</section>
+
+<!-- ═══ SECTION 3: 技术详解 ═══ -->
+<section class="anim-section" id="sec3" style="animation-delay: 0.25s">
+  <div class="sec-title"><span class="num">3</span> 核心技术深度解析</div>
+  <p class="sec-sub">点击展开查看每项防伪技术的原理、成熟度与适用场景</p>
+
+  <div class="accordion">
+
+    <!-- 一物一码 -->
+    <div class="accordion-item">
+      <button class="accordion-btn" onclick="this.parentElement.classList.toggle('open')">
+        <span>🔢 一物一码 + 量子加密</span>
+        <span class="arrow">▼</span>
+      </button>
+      <div class="accordion-body">
+        <div class="tech-desc">
+          <strong>原理</strong>：为每一台产品生成全局唯一的加密数字码（支持二维码/条形码/数字串多形态），通过密码学算法（如HMAC-SHA256）确保码值不可预测、不可伪造。消费者扫码后，系统实时解密验证并返回产品真伪状态。<br><br>
+          <strong>加密机制</strong>：SN编码采用"前缀（产品型号）+ 校验位（防篡改）+ 随机段"结构，服务端维护密钥库，离线场景可采用非对称加密的公钥验证方案。<br><br>
+          <strong>量子加密增强</strong>：叠加量子密钥分发(QKD)技术，码值生成过程引入真随机数源（量子随机数发生器），彻底消除伪随机数算法被逆向破解的风险。
+        </div>
+        <div class="tech-meta">
+          <div class="tech-meta-item"><strong>成熟度</strong> ★★★★☆</div>
+          <div class="tech-meta-item"><strong>成本</strong> &lt;0.1元/件</div>
+          <div class="tech-meta-item"><strong>适用</strong> 消费级产品大规模部署</div>
+          <div class="tech-meta-item"><strong>防破解等级</strong> ★★★★</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 全息标签 -->
+    <div class="accordion-item">
+      <button class="accordion-btn" onclick="this.parentElement.classList.toggle('open')">
+        <span>🌈 全息/光变安全标签</span>
+        <span class="arrow">▼</span>
+      </button>
+      <div class="accordion-body">
+        <div class="tech-desc">
+          <strong>原理</strong>：利用激光全息成像技术在标签上刻录微纳米级光栅结构，不同角度观察呈现不同的图案、颜色或动态效果。现代全息标签已从静态图案升级到<strong>可变光栅</strong>——角度变化时图案间实现平滑过渡甚至动画效果。<br><br>
+          <strong>安全性来源</strong>：微纳加工设备成本极高（数百万元级），且母版制作需要原厂授权的数字模型文件，山寨厂商无法经济地复刻。部分高端标签还嵌入<strong>微缩文字</strong>（肉眼不可见，需10倍放大镜识别）和<strong>紫外荧光</strong>（UV灯照射才可见）作为隐藏验证层。
+        </div>
+        <div class="tech-meta">
+          <div class="tech-meta-item"><strong>成熟度</strong> ★★★★★</div>
+          <div class="tech-meta-item"><strong>成本</strong> 0.02-0.1元/张</div>
+          <div class="tech-meta-item"><strong>适用</strong> 包装盒、耗材、证书</div>
+          <div class="tech-meta-item"><strong>防破解等级</strong> ★★★☆</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 机身镭雕SN -->
+    <div class="accordion-item">
+      <button class="accordion-btn" onclick="this.parentElement.classList.toggle('open')">
+        <span>⚡ 机身镭雕SN + 校验算法</span>
+        <span class="arrow">▼</span>
+      </button>
+      <div class="accordion-body">
+        <div class="tech-desc">
+          <strong>原理</strong>：在机身本体（如底壳内侧、铭牌区域）使用激光镭雕工艺刻印唯一SN号。激光烧蚀使材料表面产生不可逆的物理变化，无法擦除或篡改而不留痕迹。<br><br>
+          <strong>校验机制</strong>：SN号内置校验算法（如Luhn变体或CRC32），系统可快速识别随机捏造的SN。消费者在官网/小程序输入SN后，服务端验证：①格式校验通过、②数据库存在、③首次查询或查询次数异常检测。<strong>首次查询时间戳不可靠则标记可疑</strong>。<br><br>
+          <strong>进阶</strong>：SN中嵌入隐式信息（生产周、产线、销售区域），无需联网也能推断产品来源。
+        </div>
+        <div class="tech-meta">
+          <div class="tech-meta-item"><strong>成熟度</strong> ★★★★★</div>
+          <div class="tech-meta-item"><strong>成本</strong> 1-3元/台</div>
+          <div class="tech-meta-item"><strong>适用</strong> 所有硬件产品</div>
+          <div class="tech-meta-item"><strong>防破解等级</strong> ★★★★☆</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 区块链溯源 -->
+    <div class="accordion-item">
+      <button class="accordion-btn" onclick="this.parentElement.classList.toggle('open')">
+        <span>🔗 区块链溯源存证</span>
+        <span class="arrow">▼</span>
+      </button>
+      <div class="accordion-body">
+        <div class="tech-desc">
+          <strong>原理</strong>：将产品关键信息（生产日期、工厂代码、认证证书编号、质检结果、物流节点）的哈希值写入联盟链/公链的区块中。由于区块链的不可篡改性，一旦上链便永久存证，任何人都可独立验证。<br><br>
+          <strong>轻量级方案</strong>：无需将每个产品的全量数据上链（Gas费高昂），而是将<strong>批次默克尔树根哈希</strong>上链，单个产品数据的验证通过默克尔证明离线完成——成本接近零。<br><br>
+          <strong>实用性</strong>：更适用于B2B场景（经销商验证工厂批次真实性）和监管审计（市场监管部门独立验证），消费者直接使用价值有限。
+        </div>
+        <div class="tech-meta">
+          <div class="tech-meta-item"><strong>成熟度</strong> ★★★☆☆</div>
+          <div class="tech-meta-item"><strong>成本</strong> 中（批量方案低）</div>
+          <div class="tech-meta-item"><strong>适用</strong> 全生命周期追溯、合规审计</div>
+          <div class="tech-meta-item"><strong>防破解等级</strong> ★★★★★</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NFC/RFID -->
+    <div class="accordion-item">
+      <button class="accordion-btn" onclick="this.parentElement.classList.toggle('open')">
+        <span>📡 NFC / RFID 芯片标签</span>
+        <span class="arrow">▼</span>
+      </button>
+      <div class="accordion-body">
+        <div class="tech-desc">
+          <strong>原理</strong>：产品内嵌NFC/RFID芯片，芯片内存储加密的产品身份信息（支持动态密钥协商，每次读取生成不同的验证码）。消费者用手机NFC触碰即可验证真伪；物流环节通过RFID批量读取实现无感盘点。<br><br>
+          <strong>安全优势</strong>：芯片内置硬件加密引擎，私钥永不离片，物理上无法复制。高端方案采用<strong>安全元件(SE)</strong>达到金融级安全（EAL5+认证）。<br><br>
+          <strong>附加值</strong>：触碰后可触发AR体验、产品注册、延保服务激活——<strong>防伪即营销入口</strong>，参考奢侈品行业实践。
+        </div>
+        <div class="tech-meta">
+          <div class="tech-meta-item"><strong>成熟度</strong> ★★★☆☆</div>
+          <div class="tech-meta-item"><strong>成本</strong> 0.3-1.0元/件</div>
+          <div class="tech-meta-item"><strong>适用</strong> 高价值单品、供应链追踪</div>
+          <div class="tech-meta-item"><strong>防破解等级</strong> ★★★★★</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI微特征 -->
+    <div class="accordion-item">
+      <button class="accordion-btn" onclick="this.parentElement.classList.toggle('open')">
+        <span>🤖 AI 视觉微特征识别</span>
+        <span class="arrow">▼</span>
+      </button>
+      <div class="accordion-body">
+        <div class="tech-desc">
+          <strong>原理</strong>：包装印刷品在微观层面存在天然纹理——油墨扩散、纸张纤维分布、印刷网点的随机偏移——这些特征如同"指纹"。AI视觉模型（CNN/Transformer）对这些微观特征进行特征向量提取和相似度比对，判断当前样本是否与出厂留底一致。<br><br>
+          <strong>革命性优势</strong>：<strong>零物料成本</strong>——不增加任何标签/油墨/芯片，纯粹的软件+算法方案。高仿标签可以复刻宏观图案，但<strong>无法在微观尺度复制印刷纹理的随机性</strong>。<br><br>
+          <strong>识别精度</strong>：99.9%准确率，毫秒级响应。消费者只需手机拍照包装某区域，系统自动比对出厂留底特征向量。
+        </div>
+        <div class="tech-meta">
+          <div class="tech-meta-item"><strong>成熟度</strong> ★★★☆☆</div>
+          <div class="tech-meta-item"><strong>成本</strong> 零物料成本</div>
+          <div class="tech-meta-item"><strong>适用</strong> 包装/标签/工艺件</div>
+          <div class="tech-meta-item"><strong>防破解等级</strong> ★★★★★</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 固件签名 -->
+    <div class="accordion-item">
+      <button class="accordion-btn" onclick="this.parentElement.classList.toggle('open')">
+        <span>🔐 固件数字签名 + 加密芯片</span>
+        <span class="arrow">▼</span>
+      </button>
+      <div class="accordion-body">
+        <div class="tech-desc">
+          <strong>固件签名</strong>：合法固件使用厂商私钥进行数字签名（RSA/ECDSA），设备启动时用内置公钥验证固件完整性。山寨厂商即使克隆硬件，也无法刷入合法签名的固件——设备会拒绝启动或显示非正品警告。<br><br>
+          <strong>耗材加密芯片</strong>：在配套耗材（热敏纸卷/墨盒/硒鼓）嵌入安全芯片，芯片与主机完成挑战-应答认证。非原装/山寨耗材因缺少合法芯片而无法被主机识别。这是HP/Brother/佳能利润核心防线。<br><br>
+          <strong>安全等级</strong>：取决于密钥管理。密钥泄露则防线崩溃，需配合安全启动(Secure Boot)和硬件安全模块(HSM)管理根密钥。
+        </div>
+        <div class="tech-meta">
+          <div class="tech-meta-item"><strong>成熟度</strong> ★★★★☆</div>
+          <div class="tech-meta-item"><strong>成本</strong> 软件零/芯片0.2-0.5元</div>
+          <div class="tech-meta-item"><strong>适用</strong> 有耗材/固件的产品</div>
+          <div class="tech-meta-item"><strong>防破解等级</strong> ★★★★☆</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══ SECTION 4: 隐形码/暗码防伪技术 ═══ -->
+<section class="anim-section" id="sec4" style="animation-delay: 0.3s">
+  <div class="sec-title"><span class="num">4</span> 隐形码/暗码防伪技术详解</div>
+  <p class="sec-sub">肉眼不可见、专用设备识别 —— 三种主流隐形防伪路线的原理与实现流程</p>
+
+  <!-- 隐形码总述 -->
+  <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-bottom:24px;padding:20px 24px;background:linear-gradient(135deg,#EFF6FF,#F5F3FF);border-radius:var(--radius);border:1px solid var(--border);">
+    <div style="font-size:2.5rem;">👁️‍🗨️</div>
+    <div style="flex:1;min-width:240px;font-size:.9rem;color:var(--sub);line-height:1.8;">
+      <strong style="color:var(--text)">核心逻辑</strong>：将防伪标识"隐身化"——不破坏产品外观设计，不被山寨厂商察觉防伪手段的存在，消费者/经销商通过专用工具（紫外灯、CCD识别笔、AI算法）进行验证。相较于明码（可见SN、二维码），暗码的<strong style="color:var(--accent2)">隐蔽性使仿冒者根本不知道防伪信息在哪里</strong>，从根本上提高了破解门槛。
+    </div>
+  </div>
+
+  <!-- 三栏对比卡片 -->
+  <div class="tier-row">
+    <!-- UV荧光喷码 -->
+    <div class="tier-card basic anim-card" style="animation-delay:0.32s">
+      <span class="tier-badge basic">🌑 方案 A</span>
+      <h3>UV荧光隐形喷码</h3>
+      <div class="cost-label">物理层面 · 最成熟实用</div>
+      <ul>
+        <li><span class="li-num">1</span> UV荧光墨水（365nm激发）</li>
+        <li><span class="li-num">2</span> 喷码机喷印 → 紫外固化</li>
+        <li><span class="li-num">3</span> 紫外手电/识别笔验证</li>
+        <li><span class="li-num">4</span> CCD视觉设备自动化检测</li>
+      </ul>
+      <div style="margin-top:16px;font-size:.82rem;color:var(--green)">
+        ✅ 成本 &lt; 0.05元/件<br>
+        ✅ 不挑材质（纸/塑料/金属/机身）<br>
+        ✅ 已大规模部署
+      </div>
+    </div>
+
+    <!-- 数字水印 -->
+    <div class="tier-card advanced anim-card" style="animation-delay:0.36s">
+      <span class="tier-badge advanced">💧 方案 B</span>
+      <h3>数字水印（频域嵌入）</h3>
+      <div class="cost-label">算法层面 · 零物料成本</div>
+      <ul>
+        <li><span class="li-num">1</span> DCT/DWT/傅里叶变换嵌入</li>
+        <li><span class="li-num">2</span> 修改图像中频系数</li>
+        <li><span class="li-num">3</span> 不可见 + 抗压缩/裁剪/旋转</li>
+        <li><span class="li-num">4</span> AI(CNN)自动提取检测</li>
+      </ul>
+      <div style="margin-top:16px;font-size:.82rem;color:var(--accent)">
+        ✅ 零物料成本<br>
+        ✅ 鲁棒性强（JPEG压缩95%+可提取）<br>
+        ✅ 可嵌入包装印刷文件中
+      </div>
+    </div>
+
+    <!-- 微点码 -->
+    <div class="tier-card flagship anim-card" style="animation-delay:0.4s">
+      <span class="tier-badge flagship">🔬 方案 C</span>
+      <h3>微点/微缩编码</h3>
+      <div class="cost-label">纳米级 · 极端隐蔽</div>
+      <ul>
+        <li><span class="li-num">1</span> 直径30-110μm微点阵列</li>
+        <li><span class="li-num">2</span> 高精度印刷/光刻工艺</li>
+        <li><span class="li-num">3</span> 编码密度达千位/mm²</li>
+        <li><span class="li-num">4</span> 便携显微镜+AI解码器</li>
+      </ul>
+      <div style="margin-top:16px;font-size:.82rem;color:var(--accent2)">
+        ✅ 几乎不可能被仿制<br>
+        ✅ 包装"颜值"零影响<br>
+        ✅ 适用于高价值/安全产品
+      </div>
+    </div>
+  </div>
+
+  <!-- UV荧光喷码完整流程 -->
+  <div class="flow-wrap">
+    <h4 style="margin-bottom:6px;">🌑 UV 荧光隐形喷码 —— 完整实现流程</h4>
+    <p style="color:var(--sub);font-size:.85rem;margin-bottom:24px;">最适合打印机/扫描仪硬件产品的暗码方案，可直接部署于包装盒、标签及机身表面</p>
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="flow-num">①</div>
+        <div class="flow-label">生成暗码数据</div>
+        <div class="flow-desc">每件产品生成唯一加密ID（HMAC-SHA256），与SN绑定存入数据库</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">②</div>
+        <div class="flow-label">UV墨水喷印</div>
+        <div class="flow-desc">UV喷码机使用365nm荧光墨水，将暗码（二维码/DataMatrix/数字串）喷印至指定区域</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">③</div>
+        <div class="flow-label">紫外光固化</div>
+        <div class="flow-desc">UV LED灯瞬间固化墨水，附着牢固，耐擦耐磨</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">④</div>
+        <div class="flow-label">质检核验</div>
+        <div class="flow-desc">紫外灯下肉眼检查 + CCD视觉设备自动识别比对</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">⑤</div>
+        <div class="flow-label">上线验证</div>
+        <div class="flow-desc">经销商/消费者使用专用APP+紫外手电，扫码验证真伪</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 数字水印流程 -->
+  <div class="flow-wrap" style="margin-top:20px;">
+    <h4 style="margin-bottom:6px;">💧 数字水印 —— 频域嵌入流程</h4>
+    <p style="color:var(--sub);font-size:.85rem;margin-bottom:24px;">适用于产品说明书、认证证书、宣传图等电子/印刷文件的反伪造</p>
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="flow-num">①</div>
+        <div class="flow-label">水印信息加密</div>
+        <div class="flow-desc">将产品SN、批次号加密为水印比特流</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">②</div>
+        <div class="flow-label">频域变换</div>
+        <div class="flow-desc">对图像做DCT/DWT变换，选择中频系数作为嵌入载体</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">③</div>
+        <div class="flow-label">嵌入水印</div>
+        <div class="flow-desc">按照强度参数修改选定的频域系数，嵌入加密比特流</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">④</div>
+        <div class="flow-label">逆变换还原</div>
+        <div class="flow-desc">IDCT/IDWT 还原为正常图像，视觉上与原图完全一致</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">⑤</div>
+        <div class="flow-label">检测提取</div>
+        <div class="flow-desc">手机拍照 → AI(CNN)定位 → 逆变换提取 → 解密验证</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 技术对比 -->
+  <div class="table-wrap" style="margin-top:28px;">
+    <table>
+      <thead>
+        <tr>
+          <th>维度</th>
+          <th>UV荧光喷码</th>
+          <th>数字水印(DCT/DWT)</th>
+          <th>微点编码</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="td-strong">隐蔽性</td>
+          <td>★★★★★ 紫外灯才可见</td>
+          <td>★★★★★ 算法提取才可读</td>
+          <td>★★★★★ 需显微镜10x+</td>
+        </tr>
+        <tr>
+          <td class="td-strong">实施成本</td>
+          <td>&lt;0.05元/件 + 喷码设备(~2万元)</td>
+          <td>零物料 + 软件/算法投入</td>
+          <td>印刷制版费(~5000元) + 极低单件</td>
+        </tr>
+        <tr>
+          <td class="td-strong">消费者验证</td>
+          <td>紫外手电(5元) + 手机</td>
+          <td>手机APP拍照（最便捷）</td>
+          <td>专用识别笔或APP+放大镜</td>
+        </tr>
+        <tr>
+          <td class="td-strong">抗破坏能力</td>
+          <td>刮擦可去除（物理接触）</td>
+          <td>打印扫描后衰减（需高鲁棒性方案）</td>
+          <td>极高（微米级不可复刻）</td>
+        </tr>
+        <tr>
+          <td class="td-strong">适用载体</td>
+          <td>包装/标签/机身/耗材</td>
+          <td>包装印刷文件/说明书/证书</td>
+          <td>高价值标签/安全文件</td>
+        </tr>
+        <tr>
+          <td class="td-strong">推荐指数</td>
+          <td class="td-accent">⭐⭐⭐⭐⭐ 首选</td>
+          <td class="td-accent">⭐⭐⭐⭐ 补充</td>
+          <td>⭐⭐⭐ 高端选配</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 部署策略提示 -->
+  <div style="margin-top:20px;padding:18px 24px;background:#F0FDF4;border-radius:var(--radius-sm);border-left:4px solid var(--green);font-size:.88rem;color:var(--sub);">
+    <strong style="color:var(--text)">💡 针对UNISIMG的建议</strong>：在产品包装盒已有<strong>可见全息标签+SN号</strong>的基础上，再在包装内侧/耗材包装上加一道<strong>UV荧光隐形喷码</strong>作为"第二道防线"。山寨厂商复制全息标签后，通常不会想到还有一层紫外暗码——而经销商/售后人员配备紫外识别笔即可当场验真。这是投入最低（&lt;0.05元/件）、欺骗性最强的暗码组合。
+    <div class="link-block" style="margin-top:12px;">
+      📚 隐形码技术参考：
+      <a href="https://zhuanlan.zhihu.com/p/2019723899315703985" target="_blank" rel="noopener">澳格暗码技术原理 →</a>
+      &nbsp;·&nbsp;
+      <a href="https://www.sohu.com/a/830862662_121304714" target="_blank" rel="noopener">UV荧光/数字水印方案详解 →</a>
+      &nbsp;·&nbsp;
+      <a href="https://zhuanlan.zhihu.com/p/24823042335" target="_blank" rel="noopener">UV喷码机防伪原理 →</a>
+      &nbsp;·&nbsp;
+      <a href="https://cloud.tencent.com/developer/article/2539269" target="_blank" rel="noopener">数字水印(LSB/DCT/DWT) →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 5: 分级推荐 ═══ -->
+<section class="anim-section" id="sec5" style="animation-delay: 0.45s">
+  <div class="sec-title"><span class="num">5</span> 分级推荐方案</div>
+  <p class="sec-sub">按投入产出比分为三级 —— 从零成本起步到旗舰级全栈防护</p>
+
+  <div class="tier-row">
+    <!-- 基础级 -->
+    <div class="tier-card basic anim-card" style="animation-delay: 0.38s">
+      <span class="tier-badge basic">🟢 基础级</span>
+      <h3>必备 · 低成本 · 快速落地</h3>
+      <div class="cost-label">总物料成本 &lt; 0.5元/台</div>
+      <ul>
+        <li><span class="li-num">1</span> 一物一码 SN加密</li>
+        <li><span class="li-num">2</span> 机身镭雕 SN</li>
+        <li><span class="li-num">3</span> 全息防伪标签</li>
+        <li><span class="li-num">4</span> 在线验证平台</li>
+      </ul>
+      <div style="margin-top:16px;font-size:.82rem;color:var(--green)">
+        ✅ 覆盖90%假冒风险<br>
+        ✅ 1个月内可落地
+      </div>
+    </div>
+
+    <!-- 进阶级 -->
+    <div class="tier-card advanced anim-card" style="animation-delay: 0.42s">
+      <span class="tier-badge advanced">🔵 进阶级</span>
+      <h3>推荐 · 提升防护等级</h3>
+      <div class="cost-label">中等投入，3个月内落地</div>
+      <ul>
+        <li><span class="li-num">5</span> 二维码扫码验证</li>
+        <li><span class="li-num">6</span> 区域码防窜货</li>
+        <li><span class="li-num">7</span> 固件签名校验</li>
+        <li><span class="li-num">8</span> 耗材加密芯片</li>
+      </ul>
+      <div style="margin-top:16px;font-size:.82rem;color:var(--accent)">
+        ✅ 假货投诉率↓预计90%<br>
+        ✅ 经销商窜货可追溯
+      </div>
+    </div>
+
+    <!-- 旗舰级 -->
+    <div class="tier-card flagship anim-card" style="animation-delay: 0.46s">
+      <span class="tier-badge flagship">🟣 旗舰级</span>
+      <h3>高端选配 · 前瞻布局</h3>
+      <div class="cost-label">按需选用，面向出口/高价值产品线</div>
+      <ul>
+        <li><span class="li-num">9</span> NFC 安全标签</li>
+        <li><span class="li-num">10</span> AI 微特征识别</li>
+        <li><span class="li-num">11</span> 区块链存证</li>
+        <li><span class="li-num">12</span> 数字产品护照(DPP)</li>
+      </ul>
+      <div style="margin-top:16px;font-size:.82rem;color:var(--accent2)">
+        ✅ 无法复制的金融级安全<br>
+        ✅ 2027年欧盟合规
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 5: 路线图 ═══ -->
+<section class="anim-section" id="sec6" style="animation-delay: 0.6s">
+  <div class="sec-title"><span class="num">6</span> 实施路线图</div>
+  <p class="sec-sub">分阶段推进，先做"SN加密+全息标签+在线验证"，跑赢95%山寨厂商</p>
+
+  <div class="roadmap">
+    <div class="roadmap-item anim-card" style="animation-delay: 0.52s">
+      <div class="phase">Phase 1 · 1个月内 · 低成本</div>
+      <h4>基础防线搭建</h4>
+      <p>SN加密算法 + 机身镭雕SN + 全息防伪标签 + 在线验证平台<br>
+      参考HP/Brother消费者自验模式，覆盖90%假冒风险<br>
+      <strong style="color:var(--green)">全量物料成本 &lt; 0.5元/台</strong></p>
+    </div>
+    <div class="roadmap-item anim-card" style="animation-delay: 0.56s">
+      <div class="phase">Phase 2 · 3个月内 · 中等投入</div>
+      <h4>防护体系升级</h4>
+      <p>二维码扫码验证 + 区域码防窜货 + 固件签名 + 耗材加密芯片<br>
+      白酒行业已验证：假货投诉率↓92%，窜货可追溯<br>
+      <strong style="color:var(--accent)">防伪能力达到行业一线水平</strong></p>
+    </div>
+    <div class="roadmap-item anim-card" style="animation-delay: 0.6s">
+      <div class="phase">Phase 3 · 按需选配 · 前瞻布局</div>
+      <h4>技术与合规前沿</h4>
+      <p>NFC安全标签（高价值机型） + AI微特征识别 + 数字产品护照DPP（出口欧盟机型）<br>
+      2027年欧盟DPP合规要求，防伪即营销——验证页变用户运营入口<br>
+      <strong style="color:var(--accent2)">从防伪成本到品牌资产的质变</strong></p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 6: 对比总表 ═══ -->
+<section class="anim-section" id="sec7" style="animation-delay: 0.7s">
+  <div class="sec-title"><span class="num">7</span> 防伪技术对比总表</div>
+  <p class="sec-sub">横向对比各项技术的成熟度、成本、安全性及场景适用性</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>防伪技术</th>
+          <th>原理</th>
+          <th>成熟度</th>
+          <th style="text-align:right">单件成本</th>
+          <th>防破解</th>
+          <th>代表企业</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="td-strong">全息安全标签</td>
+          <td>激光全息+可变光栅+微缩文字+紫外荧光</td>
+          <td>★★★★★</td>
+          <td style="text-align:right">0.02-0.1元</td>
+          <td>★★★☆</td>
+          <td>HP / Canon / Brother</td>
+        </tr>
+        <tr>
+          <td class="td-strong">一物一码+量子加密</td>
+          <td>每台全局唯一码 + HMAC/非对称加密 + 量子真随机</td>
+          <td>★★★★☆</td>
+          <td style="text-align:right">&lt;0.1元</td>
+          <td>★★★★</td>
+          <td>白酒行业全体 / 手机行业</td>
+        </tr>
+        <tr>
+          <td class="td-strong">机身镭雕SN+校验</td>
+          <td>激光烧蚀不可擦 + 内含CRC/Luhn/隐式信息</td>
+          <td>★★★★★</td>
+          <td style="text-align:right">1-3元/台</td>
+          <td>★★★★☆</td>
+          <td>vivo / 小米 / 所有正规硬件厂</td>
+        </tr>
+        <tr>
+          <td class="td-strong">二维码扫码验证</td>
+          <td>手机扫码→实时联网验证+首次查询时间戳防伪</td>
+          <td>★★★★★</td>
+          <td style="text-align:right">零物料</td>
+          <td>★★★</td>
+          <td>佳能 / 奢侈品 / 白酒</td>
+        </tr>
+        <tr>
+          <td class="td-strong">NFC安全标签</td>
+          <td>硬件加密引擎(SE EAL5+) + 动态密钥 + 永不离片私钥</td>
+          <td>★★★☆☆</td>
+          <td style="text-align:right">0.3-1.0元</td>
+          <td>★★★★★</td>
+          <td>LVMH / Apple</td>
+        </tr>
+        <tr>
+          <td class="td-strong">AI微特征识别</td>
+          <td>CNN/Transformer提取微观纹理→出厂留底特征向量比对</td>
+          <td>★★★☆☆</td>
+          <td style="text-align:right">零物料</td>
+          <td>★★★★★</td>
+          <td>奢侈品/前沿科技企业</td>
+        </tr>
+        <tr>
+          <td class="td-strong">固件数字签名</td>
+          <td>RSA/ECDSA私钥签名 + 安全启动链 + 公钥片上验证</td>
+          <td>★★★★☆</td>
+          <td style="text-align:right">零/芯片0.2-0.5元</td>
+          <td>★★★★☆</td>
+          <td>HP / Brother / 通讯设备</td>
+        </tr>
+        <tr>
+          <td class="td-strong">区域码防窜货</td>
+          <td>SN嵌入区域码 + 扫码出库绑定 + GIS轨迹异常预警</td>
+          <td>★★★★☆</td>
+          <td style="text-align:right">零物料</td>
+          <td>★★★★</td>
+          <td>白酒/日化/快消品</td>
+        </tr>
+        <tr>
+          <td class="td-strong">区块链溯源存证</td>
+          <td>批次默克尔根上链 + 单件默克尔证明离线验证</td>
+          <td>★★★☆☆</td>
+          <td style="text-align:right">中（批量方案极低）</td>
+          <td>★★★★★</td>
+          <td>沃尔玛 / 马士基</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══ SECTION 7: UNISIMG 实操建议 ═══ -->
+<section class="anim-section" id="sec8" style="animation-delay: 0.8s">
+  <div class="sec-title"><span class="num">8</span> UNISIMG 定制化建议</div>
+  <p class="sec-sub">结合ODM认证模式和产品线特点的实操方案</p>
+
+  <div class="card-grid">
+    <div class="card anim-card" style="animation-delay: 0.72s">
+      <div class="card-header">
+        <div class="card-icon blue">🤝</div>
+        <div class="card-title">ODM工厂协同</div>
+      </div>
+      <div class="card-text">
+        将SN生成规则、镭雕标准、标签粘贴流程写入ODM合同附件，确保工厂源头一致性。建议定期飞行检查。
+      </div>
+    </div>
+    <div class="card anim-card" style="animation-delay: 0.76s">
+      <div class="card-header">
+        <div class="card-icon purple">📋</div>
+        <div class="card-title">认证联动（差异化亮点）</div>
+      </div>
+      <div class="card-text">
+        SN码与CCC证书编号绑定，消费者查询时同时显示认证状态——<strong>行业中尚无此做法，可成UNISIMG品牌标签</strong>。
+      </div>
+    </div>
+    <div class="card anim-card" style="animation-delay: 0.8s">
+      <div class="card-header">
+        <div class="card-icon green">💰</div>
+        <div class="card-title">低成本起步</div>
+      </div>
+      <div class="card-text">
+        Phase 1全套物料 &lt; 0.5元/台。优先做<strong>SN加密 + 全息标签 + 在线验证</strong>三件事，适配中小企业预算。
+      </div>
+    </div>
+    <div class="card anim-card" style="animation-delay: 0.84s">
+      <div class="card-header">
+        <div class="card-icon orange">🚀</div>
+        <div class="card-title">品牌溢价转化</div>
+      </div>
+      <div class="card-text">
+        防伪验证页联动<strong>产品注册 + 延保服务 + OTA升级提醒</strong>，将防伪从成本中心转化为用户运营入口。
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+</div><!-- /main-content -->
+
+<footer class="footer">
+  <div style="max-width:900px;margin:0 auto;text-align:left;line-height:2;font-size:.82rem;">
+    <strong style="color:#fff;font-size:.92rem;">📚 参考来源 & 延伸阅读</strong><br><br>
+    <span style="color:rgba(255,255,255,.4);">行业巨头官方验证入口：</span><br>
+    <a href="https://www.hp.com/cn-zh/cartridge/anti-counterfeit.html" target="_blank" rel="noopener" style="color:rgba(255,255,255,.7)">HP中国防伪措施</a> ·
+    <a href="https://www.canon.com.cn/supports/authenticity/index.html" target="_blank" rel="noopener" style="color:rgba(255,255,255,.7)">佳能中国防伪查询</a> ·
+    <a href="https://update.brother.co.jp/pbj/id/default.aspx" target="_blank" rel="noopener" style="color:rgba(255,255,255,.7)">Brother产品验证</a> ·
+    <a href="https://www.epson.com.cn/" target="_blank" rel="noopener" style="color:rgba(255,255,255,.7)">爱普生中国</a><br><br>
+    <span style="color:rgba(255,255,255,.4);">防伪技术深入资料：</span><br>
+    <a href="https://www.sohu.com/a/936575501_122206987" target="_blank" rel="noopener" style="color:rgba(255,255,255,.7)">五码合一+区块链溯源</a> ·
+    <a href="https://zhuanlan.zhihu.com/p/2019723899315703985" target="_blank" rel="noopener" style="color:rgba(255,255,255,.7)">澳格暗码技术</a> ·
+    <a href="https://www.sohu.com/a/830862662_121304714" target="_blank" rel="noopener" style="color:rgba(255,255,255,.7)">UV荧光/数字水印</a> ·
+    <a href="https://cloud.tencent.com/developer/article/2539269" target="_blank" rel="noopener" style="color:rgba(255,255,255,.7)">DCT/DWT数字水印算法</a> ·
+    <a href="https://developer.baidu.com/article/detail.html?id=6056793" target="_blank" rel="noopener" style="color:rgba(255,255,255,.7)">数字水印技术综述</a><br><br>
+    <span style="color:rgba(255,255,255,.4);">行业组织：</span>
+    <a href="http://www.ctaac.org.cn/" target="_blank" rel="noopener" style="color:rgba(255,255,255,.7)">中国防伪行业协会</a>
+  </div>
+  <div style="margin-top:20px;font-size:.8rem;color:rgba(255,255,255,.5);">
+    打印机/扫描仪产品防伪处理方案 · 全维度研究报告 · 2026年6月 · UNISIMG
+  </div>
+</footer>
+
+<script>
+// ═══ Navigation Toggle ═══
+const sideNav = document.getElementById('sideNav');
+const navToggle = document.getElementById('navToggle');
+const navOverlay = document.getElementById('navOverlay');
+const mainContent = document.querySelector('.main-content');
+let navOpen = true;
+
+function toggleNav() {
+  navOpen = !navOpen;
+  sideNav.classList.toggle('hidden', !navOpen);
+  navToggle.classList.toggle('shifted', !navOpen);
+  navToggle.textContent = navOpen ? '✕' : '☰';
+  mainContent.classList.toggle('nav-expanded', navOpen);
+  if (window.innerWidth <= 1024) {
+    sideNav.classList.toggle('mobile-open', navOpen);
+    navOverlay.classList.toggle('show', navOpen);
+  }
+}
+
+// Mobile: click overlay to close
+navOverlay.addEventListener('click', () => {
+  navOpen = true; toggleNav();
+});
+
+// ═══ Scroll spy: highlight active nav link ═══
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.nav-list a');
+const SCROLL_OFFSET = 120; // 触发偏移量，提前高亮
+
+function updateActiveNav() {
+  let current = '';
+  sections.forEach(sec => {
+    const top = sec.getBoundingClientRect().top;
+    if (top < SCROLL_OFFSET) current = sec.id;
+  });
+  navLinks.forEach(a => {
+    a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+  });
+}
+
+// Smooth scroll for nav links (含偏移修正，防止标题被header遮挡)
+navLinks.forEach(a => {
+  a.addEventListener('click', (e) => {
+    e.preventDefault();
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) {
+      const top = target.getBoundingClientRect().top + window.pageYOffset - 20;
+      window.scrollTo({ top: top, behavior: 'smooth' });
+      // On mobile, close nav after click
+      if (window.innerWidth <= 1024 && navOpen) {
+        navOpen = true; toggleNav();
+      }
+    }
+  });
+});
+
+window.addEventListener('scroll', updateActiveNav, { passive: true });
+
+// ═══ Init on load ═══
+document.addEventListener('DOMContentLoaded', () => {
+  // 初始高亮
+  updateActiveNav();
+
+  // Auto open first accordion
+  const firstAcc = document.querySelector('.accordion-item');
+  if (firstAcc) firstAcc.classList.add('open');
+
+  // On page load, stagger the card animations
+  document.querySelectorAll('.anim-card').forEach((el, i) => {
+    el.style.animationDelay = (parseFloat(el.style.animationDelay) || 0.1 * i) + 's';
+  });
+});
+</script>
+
+</body>
+</html>
