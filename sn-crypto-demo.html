@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>UNISIMG 加密SN码生成与验证演示系统</title>
+<title>ABC 加密SN码生成与验证演示系统</title>
 <style>
   :root {
     --bg: #F7F8FA;
@@ -226,7 +226,7 @@
 <body>
 
 <div class="header">
-  <h1>UNISIMG 加密 SN 码演示系统</h1>
+  <h1>ABC 加密 SN 码演示系统</h1>
   <p>体验 SN 加密生成、机身镭雕、在线验证的完整流程</p>
   <div class="badge-row">
     <span class="badge">🔐 HMAC-SHA256 加密</span>
@@ -253,7 +253,7 @@
         <div class="form-group">
           <label>产品型号</label>
           <select id="genProduct">
-            <option value="SXZQ">SXZQ - KA 扫描仪</option>
+            <option value="SXZQ">SXZQ - 扫描仪</option>
             <option value="SXQP">SXQP - 签批屏</option>
             <option value="SXPS">SXPS - 高拍仪</option>
             <option value="SXCD">SXCD - 光盘产品</option>
@@ -281,9 +281,9 @@
         <div class="form-group">
           <label>代工厂</label>
           <select id="genFactory">
-            <option value="F01">F01 - 深圳奥尼电子</option>
-            <option value="F02">F02 - 东莞捷荣技术</option>
-            <option value="F03">F03 - 惠州华阳集团</option>
+            <option value="F01">F01 - A工厂</option>
+            <option value="F02">F02 - B工厂</option>
+            <option value="F03">F03 - C工厂</option>
           </select>
         </div>
         <div class="form-group">
@@ -315,7 +315,7 @@
         <div class="flow-num">2</div>
         <div class="flow-content">
           <div class="flow-title">HMAC-SHA256 加密</div>
-          <div class="flow-desc">以 UNISIMG 私钥为密钥，对原始字符串加密，截取 6 位作为 Crypto 段</div>
+          <div class="flow-desc">以 ABC 私钥为密钥，对原始字符串加密，截取 6 位作为 Crypto 段</div>
         </div>
       </div>
       <div class="flow-step">
@@ -387,11 +387,11 @@
       <div class="card-title"><span class="icon purple">📋</span> 翻新机查询结果示例</div>
       <div class="result-box info">
         <strong>终端用户看到的翻新机验证页面：</strong><br><br>
-        <div style="font-size:1.1rem; color:var(--orange); font-weight:700;">✅ UNISIMG 官方翻新机</div><br>
-        产品型号：KA-XXXX<br>
+        <div style="font-size:1.1rem; color:var(--orange); font-weight:700;">✅ ABC 官方翻新机</div><br>
+        产品型号：XX-XXXX<br>
         翻新日期：2026-06<br>
         原厂保修：12 个月（自翻新之日起）<br><br>
-        <span style="color:var(--orange);">⚠ 注意：本机为官方翻新设备，非全新机。经 UNISIMG 官方检测、更换损耗件、重新校准。</span>
+        <span style="color:var(--orange);">⚠ 注意：本机为官方翻新设备，非全新机。经 ABC 官方检测、更换损耗件、重新校准。</span>
       </div>
     </div>
   </div>
@@ -425,7 +425,7 @@
 </div>
 
 <footer style="background:#1E3A5F; color:rgba(255,255,255,.6); text-align:center; padding:24px; font-size:.82rem;">
-  UNISIMG 防伪系统演示 · 本页面为原理体验，非正式系统
+  ABC 防伪系统演示 · 本页面为原理体验，非正式系统
 </footer>
 
 <script>
@@ -513,12 +513,12 @@ function parseSN(sn) {
 }
 
 function getProductName(code) {
-  const map = { 'SXZQ': 'KA扫描仪', 'SXQP': '签批屏', 'SXPS': '高拍仪', 'SXCD': '光盘产品' };
+  const map = { 'SXZQ': '扫描仪', 'SXQP': '签批屏', 'SXPS': '高拍仪', 'SXCD': '光盘产品' };
   return map[code] || code;
 }
 
 function getFactoryName(code) {
-  const map = { 'F01': '深圳奥尼', 'F02': '东莞捷荣', 'F03': '惠州华阳' };
+  const map = { 'F01': 'A工厂', 'F02': 'B工厂', 'F03': 'C工厂' };
   return map[code] || code;
 }
 
@@ -592,7 +592,7 @@ function verifySN() {
 
   if (!record) {
     // 格式对但数据库里没有 — 可能是未录入的真品或完全伪造
-    resultDiv.innerHTML = '<div class="result-box warning"><strong>⚠️ 未录入系统</strong><br>SN 格式合法，但不在当前数据库中。<br>如果是新品，请联系 UNISIMG 确认。</div>';
+    resultDiv.innerHTML = '<div class="result-box warning"><strong>⚠️ 未录入系统</strong><br>SN 格式合法，但不在当前数据库中。<br>如果是新品，请联系品牌方确认。</div>';
     return;
   }
 
@@ -645,7 +645,7 @@ function simulateScan(role) {
   if (role === 'dealer') {
     html += '<div style="font-size:.9rem; line-height:1.8;">';
     html += '① 经销商收到整箱货物，核对随货 SN 清单<br>';
-    html += '② 登录 UNISIMG 官方后台 → 批量导入 SN 清单<br>';
+    html += '② 登录 ABC 官方后台 → 批量导入 SN 清单<br>';
     html += '③ 系统返回：<strong>全部正品</strong>（5秒完成）<br>';
     html += '④ 下载 PDF 验真报告存档<br><br>';
     html += '<span style="color:var(--sub);">⚠ 渠道核验记录仅后台可见，不计入终端首次查询</span>';
@@ -653,7 +653,7 @@ function simulateScan(role) {
   } else if (role === 'customer') {
     html += '<div style="background:#fff; border-radius:8px; padding:16px; border:1px solid var(--border);">';
     html += '<div style="font-size:1.1rem; color:var(--green); font-weight:700;">✅ 正品</div><br>';
-    html += '产品型号：' + (record ? getProductName(record.product) : 'KA扫描仪') + '<br>';
+    html += '产品型号：' + (record ? getProductName(record.product) : '扫描仪') + '<br>';
     html += '硬件版本：HV02<br>';
     html += '出厂批次：2026上半年<br>';
     html += '保修截止：2028-06<br><br>';
@@ -664,7 +664,7 @@ function simulateScan(role) {
     html += '① 售后扫描机身 DataMatrix → 提取 SN：<strong>' + testSN + '</strong><br>';
     html += '② 查询数据库：<br>';
     html += '&nbsp;&nbsp;• 出厂日期：2026-06<br>';
-    html += '&nbsp;&nbsp;• 出货经销商：深圳XX科技<br>';
+    html += '&nbsp;&nbsp;• 出货经销商：XX经销商<br>';
     html += '&nbsp;&nbsp;• 保修状态：在保<br>';
     html += '&nbsp;&nbsp;• 历史维修：无<br>';
     html += '③ 判定：正品，可正常保修<br><br>';
@@ -772,7 +772,7 @@ function renderDatabase() {
 }
 
 // 初始化
-console.log('UNISIMG SN Crypto Demo loaded. 预置 ' + db.records.length + ' 条测试数据。');
+console.log('SN Crypto Demo loaded. 预置 ' + db.records.length + ' 条测试数据。');
 </script>
 
 </body>
