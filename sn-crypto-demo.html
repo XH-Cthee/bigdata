@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UNISIMG 加密SN码生成与验证演示系统</title>
+<style>
+  :root {
+    --bg: #F7F8FA;
+    --card: #FFFFFF;
+    --text: #1A1A2E;
+    --sub: #6B7280;
+    --accent: #2563EB;
+    --accent2: #7C3AED;
+    --green: #059669;
+    --orange: #D97706;
+    --red: #DC2626;
+    --border: #E5E7EB;
+    --shadow: 0 1px 3px rgba(0,0,0,.06), 0 6px 24px rgba(0,0,0,.04);
+    --radius: 12px;
+    --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+  .header {
+    background: linear-gradient(135deg, #1E3A5F 0%, #2563EB 40%, #7C3AED 100%);
+    color: #fff;
+    padding: 48px 24px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header h1 { font-size: 1.8rem; font-weight: 700; position: relative; z-index: 1; }
+  .header p { margin-top: 8px; font-size: .95rem; opacity: 0.85; position: relative; z-index: 1; }
+  .badge-row { margin-top: 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; position: relative; z-index: 1; }
+  .badge { background: rgba(255,255,255,.15); backdrop-filter: blur(8px); padding: 5px 14px; border-radius: 100px; font-size: .8rem; }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 32px 16px 60px; }
+
+  .tabs { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+  .tab-btn {
+    padding: 10px 22px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #fff;
+    cursor: pointer;
+    font-size: .92rem;
+    font-weight: 600;
+    color: var(--sub);
+    transition: var(--transition);
+    font-family: inherit;
+  }
+  .tab-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .panel { display: none; }
+  .panel.active { display: block; animation: fadeInUp 0.4s ease; }
+
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+  .card-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .card-title .icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+  .icon.blue { background: #DBEAFE; color: #2563EB; }
+  .icon.green { background: #D1FAE5; color: #059669; }
+  .icon.purple { background: #EDE9FE; color: #7C3AED; }
+  .icon.orange { background: #FEF3C7; color: #D97706; }
+  .icon.red { background: #FEE2E2; color: #DC2626; }
+
+  .form-row { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+  .form-group { flex: 1; min-width: 200px; }
+  .form-group label { display: block; font-size: .85rem; font-weight: 600; color: var(--sub); margin-bottom: 6px; }
+  .form-group input, .form-group select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: .95rem;
+    font-family: inherit;
+    background: #fff;
+    transition: var(--transition);
+  }
+  .form-group input:focus, .form-group select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+  }
+
+  .btn {
+    padding: 12px 28px;
+    border: none;
+    border-radius: 8px;
+    font-size: .95rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #1D4ED8; }
+  .btn-success { background: var(--green); color: #fff; }
+  .btn-success:hover { background: #047857; }
+  .btn-orange { background: var(--orange); color: #fff; }
+  .btn-orange:hover { background: #B45309; }
+  .btn-outline { background: #fff; color: var(--accent); border: 1px solid var(--accent); }
+  .btn-outline:hover { background: #EFF6FF; }
+
+  .result-box {
+    background: #F8FAFC;
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 20px;
+    border-left: 4px solid var(--accent);
+  }
+  .result-box.success { border-left-color: var(--green); background: #F0FDF4; }
+  .result-box.error { border-left-color: var(--red); background: #FEF2F2; }
+  .result-box.warning { border-left-color: var(--orange); background: #FFFBEB; }
+  .result-box.info { border-left-color: var(--accent2); background: #F5F3FF; }
+
+  .sn-display {
+    font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    background: #EFF6FF;
+    padding: 12px 18px;
+    border-radius: 8px;
+    display: inline-block;
+    margin: 8px 0;
+  }
+  .sn-breakdown {
+    display: flex;
+    gap: 4px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+  .sn-segment {
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: .82rem;
+    font-weight: 600;
+  }
+  .sn-segment.p1 { background: #DBEAFE; color: #1E40AF; }
+  .sn-segment.p2 { background: #D1FAE5; color: #065F46; }
+  .sn-segment.p3 { background: #FEF3C7; color: #92400E; }
+  .sn-segment.p4 { background: #EDE9FE; color: #5B21B6; }
+  .sn-segment.p5 { background: #FEE2E2; color: #991B1B; }
+
+  .batch-list {
+    max-height: 300px;
+    overflow-y: auto;
+    background: #F8FAFC;
+    border-radius: 10px;
+    padding: 12px;
+    margin-top: 12px;
+  }
+  .batch-item {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    font-family: monospace;
+    font-size: .88rem;
+    display: flex;
+    justify-content: space-between;
+  }
+  .batch-item:last-child { border-bottom: none; }
+
+  .flow-step {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 14px;
+    padding: 14px;
+    background: #F8FAFC;
+    border-radius: 10px;
+  }
+  .flow-num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: .82rem;
+    flex-shrink: 0;
+  }
+  .flow-content { flex: 1; }
+  .flow-title { font-weight: 700; font-size: .92rem; }
+  .flow-desc { font-size: .85rem; color: var(--sub); margin-top: 2px; }
+
+  .db-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .85rem;
+    margin-top: 12px;
+  }
+  .db-table th { background: #F1F5F9; padding: 10px; text-align: left; font-weight: 700; }
+  .db-table td { padding: 10px; border-top: 1px solid var(--border); color: var(--sub); }
+  .db-table tr:hover td { background: #FAFBFC; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: .75rem; font-weight: 600; }
+  .tag-new { background: #D1FAE5; color: #065F46; }
+  .tag-refurb { background: #FEF3C7; color: #92400E; }
+  .tag-void { background: #E5E7EB; color: #374151; }
+
+  @media (max-width: 768px) {
+    .header h1 { font-size: 1.4rem; }
+    .form-row { flex-direction: column; }
+    .sn-display { font-size: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>UNISIMG 加密 SN 码演示系统</h1>
+  <p>体验 SN 加密生成、机身镭雕、在线验证的完整流程</p>
+  <div class="badge-row">
+    <span class="badge">🔐 HMAC-SHA256 加密</span>
+    <span class="badge">🏷️ 多产品线</span>
+    <span class="badge">🏭 多工厂管理</span>
+    <span class="badge">🔄 官翻机支持</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('generate')">🔧 SN 生成器</button>
+    <button class="tab-btn" onclick="switchTab('verify')">🔍 SN 验证器</button>
+    <button class="tab-btn" onclick="switchTab('refurb')">🔄 官翻机管理</button>
+    <button class="tab-btn" onclick="switchTab('database')">🗄️ 模拟数据库</button>
+  </div>
+
+  <!-- ===== 生成器面板 ===== -->
+  <div class="panel active" id="panel-generate">
+    <div class="card">
+      <div class="card-title"><span class="icon blue">🔧</span> 加密 SN 码生成</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>产品型号</label>
+          <select id="genProduct">
+            <option value="SXZQ">SXZQ - KA 扫描仪</option>
+            <option value="SXQP">SXQP - 签批屏</option>
+            <option value="SXPS">SXPS - 高拍仪</option>
+            <option value="SXCD">SXCD - 光盘产品</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>硬件版本</label>
+          <select id="genVersion">
+            <option value="1">1 - 原型机 A</option>
+            <option value="2" selected>2 - A1 衍生</option>
+            <option value="3">3 - A2 衍生</option>
+            <option value="9">9 - 特殊版本</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>生产批次</label>
+          <select id="genBatch">
+            <option value="6A" selected>6A - 2026上半年</option>
+            <option value="6B">6B - 2026下半年</option>
+            <option value="7A">7A - 2027上半年</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>代工厂</label>
+          <select id="genFactory">
+            <option value="F01">F01 - 深圳奥尼电子</option>
+            <option value="F02">F02 - 东莞捷荣技术</option>
+            <option value="F03">F03 - 惠州华阳集团</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>生成数量</label>
+          <input type="number" id="genCount" value="5" min="1" max="100">
+        </div>
+        <div class="form-group">
+          <label>起始序号</label>
+          <input type="number" id="genStart" value="1" min="1">
+        </div>
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="generateSN()">⚡ 生成加密 SN</button>
+        <button class="btn btn-outline" onclick="clearGenerate()">清空</button>
+      </div>
+      <div id="genResult"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon purple">📊</span> SN 结构解析</div>
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <div class="flow-content">
+          <div class="flow-title">输入原始信息</div>
+          <div class="flow-desc">产品代码(4位) + 硬件版本(1位) + 批次(2位) + 递增序号</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <div class="flow-content">
+          <div class="flow-title">HMAC-SHA256 加密</div>
+          <div class="flow-desc">以 UNISIMG 私钥为密钥，对原始字符串加密，截取 6 位作为 Crypto 段</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <div class="flow-content">
+          <div class="flow-title">Luhn 校验位</div>
+          <div class="flow-desc">对前 13 位计算 2 位校验码，防止手工输入错误</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">4</div>
+        <div class="flow-content">
+          <div class="flow-title">组合完整 SN</div>
+          <div class="flow-desc">Prefix(4) + HW(1) + Batch(2) + Crypto(6) + Check(2) = 15 位</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 验证器面板 ===== -->
+  <div class="panel" id="panel-verify">
+    <div class="card">
+      <div class="card-title"><span class="icon green">🔍</span> SN 真伪验证</div>
+      <div class="form-row">
+        <div class="form-group" style="flex:2;">
+          <label>输入 SN 码（15位字母数字）</label>
+          <input type="text" id="verifyInput" placeholder="如：SXZQ26AX8K2M97R" maxlength="15">
+        </div>
+        <div class="form-group" style="display:flex; align-items:flex-end;">
+          <button class="btn btn-success" onclick="verifySN()">🔍 验证真伪</button>
+        </div>
+      </div>
+      <div style="margin-top:8px; font-size:.82rem; color:var(--sub);">
+        提示：支持手动输入或扫码识别。先试用上方生成器产生的 SN，或输入 <code>SXZQ26AX8K2M97R</code> 测试。
+      </div>
+      <div id="verifyResult"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon orange">📱</span> 模拟扫码场景</div>
+      <p style="font-size:.9rem; color:var(--sub); margin-bottom:16px;">点击下方按钮，模拟不同角色的扫码验真场景：</p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn btn-outline" onclick="simulateScan('dealer')">🏪 经销商收货验真</button>
+        <button class="btn btn-outline" onclick="simulateScan('customer')">👤 终端用户查询</button>
+        <button class="btn btn-outline" onclick="simulateScan('service')">🔧 售后维修溯源</button>
+      </div>
+      <div id="scanResult"></div>
+    </div>
+  </div>
+
+  <!-- ===== 官翻机面板 ===== -->
+  <div class="panel" id="panel-refurb">
+    <div class="card">
+      <div class="card-title"><span class="icon orange">🔄</span> 官翻机 SN 管理</div>
+      <p style="font-size:.9rem; color:var(--sub); margin-bottom:16px;">将正品回收后翻新，分配翻新专用 SN 号段：</p>
+      <div class="form-row">
+        <div class="form-group" style="flex:2;">
+          <label>原正品 SN（需回收翻新）</label>
+          <input type="text" id="refurbOldSN" placeholder="输入需要翻新的原 SN">
+        </div>
+        <div class="form-group" style="display:flex; align-items:flex-end;">
+          <button class="btn btn-orange" onclick="processRefurb()">🔄 执行翻新</button>
+        </div>
+      </div>
+      <div id="refurbResult"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon purple">📋</span> 翻新机查询结果示例</div>
+      <div class="result-box info">
+        <strong>终端用户看到的翻新机验证页面：</strong><br><br>
+        <div style="font-size:1.1rem; color:var(--orange); font-weight:700;">✅ UNISIMG 官方翻新机</div><br>
+        产品型号：KA-XXXX<br>
+        翻新日期：2026-06<br>
+        原厂保修：12 个月（自翻新之日起）<br><br>
+        <span style="color:var(--orange);">⚠ 注意：本机为官方翻新设备，非全新机。经 UNISIMG 官方检测、更换损耗件、重新校准。</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 数据库面板 ===== -->
+  <div class="panel" id="panel-database">
+    <div class="card">
+      <div class="card-title"><span class="icon blue">🗄️</span> 模拟数据库视图</div>
+      <p style="font-size:.9rem; color:var(--sub); margin-bottom:12px;">当前会话中生成的全部 SN 记录（刷新页面后重置）：</p>
+      <div style="overflow-x:auto;">
+        <table class="db-table">
+          <thead>
+            <tr>
+              <th>SN 码</th>
+              <th>产品</th>
+              <th>版本</th>
+              <th>工厂</th>
+              <th>状态</th>
+              <th>终端查询</th>
+              <th>渠道核验</th>
+            </tr>
+          </thead>
+          <tbody id="dbTableBody">
+            <tr><td colspan="7" style="text-align:center; color:#9CA3AF;">暂无记录，请先在「SN 生成器」中生成</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer style="background:#1E3A5F; color:rgba(255,255,255,.6); text-align:center; padding:24px; font-size:.82rem;">
+  UNISIMG 防伪系统演示 · 本页面为原理体验，非正式系统
+</footer>
+
+<script>
+// ========== 模拟数据库 ==========
+const db = {
+  records: [],
+  queries: [],
+  channelQueries: []
+};
+
+// 预置几条测试数据
+const demoSNs = [
+  { sn: 'SXZQ26AX8K2M97R', product: 'SXZQ', version: '2', batch: '6A', factory: 'F01', status: 'new', crypto: 'X8K2M9', check: '7R' },
+  { sn: 'SXZQ26BX9M3P2Q5T', product: 'SXZQ', version: '2', batch: '6B', factory: 'F02', status: 'new', crypto: 'X9M3P2', check: 'Q5' },
+  { sn: 'SXQP26AR2K8N4J3W', product: 'SXQP', version: '2', batch: '6A', factory: 'F01', status: 'new', crypto: 'R2K8N4', check: 'J3' },
+];
+demoSNs.forEach(r => db.records.push(r));
+
+// ========== 工具函数 ==========
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-' + tabId).classList.add('active');
+  if (tabId === 'database') renderDatabase();
+}
+
+function hashString(str) {
+  // 简化的哈希函数（演示用），真实环境用 HMAC-SHA256
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let result = '';
+  let h = Math.abs(hash);
+  for (let i = 0; i < 6; i++) {
+    result += chars[h % chars.length];
+    h = Math.floor(h / chars.length);
+  }
+  return result;
+}
+
+function luhnCheck(str) {
+  // 简化的 Luhn 变体校验
+  let sum = 0;
+  for (let i = 0; i < str.length; i++) {
+    let code = str.charCodeAt(i);
+    sum += code * (i % 2 === 0 ? 2 : 1);
+  }
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const r1 = sum % chars.length;
+  const r2 = (sum * 7) % chars.length;
+  return chars[r1] + chars[r2];
+}
+
+function generateCrypto(prefix, version, batch, seq) {
+  const raw = prefix + version + batch + String(seq).padStart(6, '0');
+  return hashString(raw);
+}
+
+function buildSN(prefix, version, batch, seq) {
+  const crypto = generateCrypto(prefix, version, batch, seq);
+  const base = prefix + version + batch + crypto;
+  const check = luhnCheck(base);
+  return base + check;
+}
+
+function parseSN(sn) {
+  if (sn.length !== 15) return null;
+  const prefix = sn.substring(0, 4);
+  const version = sn.substring(4, 5);
+  const batch = sn.substring(5, 7);
+  const crypto = sn.substring(7, 13);
+  const check = sn.substring(13, 15);
+  const base = prefix + version + batch + crypto;
+  const validCheck = luhnCheck(base);
+  return {
+    prefix, version, batch, crypto, check,
+    valid: check === validCheck,
+    validCheck
+  };
+}
+
+function getProductName(code) {
+  const map = { 'SXZQ': 'KA扫描仪', 'SXQP': '签批屏', 'SXPS': '高拍仪', 'SXCD': '光盘产品' };
+  return map[code] || code;
+}
+
+function getFactoryName(code) {
+  const map = { 'F01': '深圳奥尼', 'F02': '东莞捷荣', 'F03': '惠州华阳' };
+  return map[code] || code;
+}
+
+// ========== 生成器 ==========
+function generateSN() {
+  const product = document.getElementById('genProduct').value;
+  const version = document.getElementById('genVersion').value;
+  const batch = document.getElementById('genBatch').value;
+  const factory = document.getElementById('genFactory').value;
+  const count = parseInt(document.getElementById('genCount').value) || 5;
+  const start = parseInt(document.getElementById('genStart').value) || 1;
+
+  const results = [];
+  for (let i = 0; i < count; i++) {
+    const seq = start + i;
+    const sn = buildSN(product, version, batch, seq);
+    results.push({ sn, product, version, batch, factory, seq, status: 'new' });
+    db.records.push({ sn, product, version, batch, factory, status: 'new', crypto: sn.substring(7,13), check: sn.substring(13,15) });
+  }
+
+  let html = '<div class="result-box info">';
+  html += '<strong>✅ 生成成功（共 ' + count + ' 条）</strong><br><br>';
+  html += '<div class="batch-list">';
+  results.forEach((r, idx) => {
+    html += '<div class="batch-item">';
+    html += '<span>#' + r.seq + ' : <strong>' + r.sn + '</strong></span>';
+    html += '<span style="color:var(--sub); font-size:.8rem;">' + getFactoryName(r.factory) + '</span>';
+    html += '</div>';
+  });
+  html += '</div>';
+  html += '<br><div class="sn-breakdown">';
+  html += '<span class="sn-segment p1">Prefix: ' + product + '</span>';
+  html += '<span class="sn-segment p2">HW: ' + version + '</span>';
+  html += '<span class="sn-segment p3">Batch: ' + batch + '</span>';
+  html += '<span class="sn-segment p4">Crypto: ' + results[0].sn.substring(7,13) + '</span>';
+  html += '<span class="sn-segment p5">Check: ' + results[0].sn.substring(13,15) + '</span>';
+  html += '</div>';
+  html += '</div>';
+
+  document.getElementById('genResult').innerHTML = html;
+}
+
+function clearGenerate() {
+  document.getElementById('genResult').innerHTML = '';
+}
+
+// ========== 验证器 ==========
+function verifySN() {
+  const input = document.getElementById('verifyInput').value.trim().toUpperCase();
+  const resultDiv = document.getElementById('verifyResult');
+
+  if (input.length !== 15) {
+    resultDiv.innerHTML = '<div class="result-box error"><strong>❌ 格式错误</strong><br>SN 码必须为 15 位字母数字组合。</div>';
+    return;
+  }
+
+  const parsed = parseSN(input);
+  if (!parsed) {
+    resultDiv.innerHTML = '<div class="result-box error"><strong>❌ 解析失败</strong><br>SN 结构不符合规范。</div>';
+    return;
+  }
+
+  // 校验位检查
+  if (!parsed.valid) {
+    resultDiv.innerHTML = '<div class="result-box error"><strong>❌ 校验位错误</strong><br>该 SN 码可能是随机伪造或输入有误。<br>计算校验位应为：' + parsed.validCheck + '</div>';
+    return;
+  }
+
+  // 查找数据库
+  const record = db.records.find(r => r.sn === input);
+
+  if (!record) {
+    // 格式对但数据库里没有 — 可能是未录入的真品或完全伪造
+    resultDiv.innerHTML = '<div class="result-box warning"><strong>⚠️ 未录入系统</strong><br>SN 格式合法，但不在当前数据库中。<br>如果是新品，请联系 UNISIMG 确认。</div>';
+    return;
+  }
+
+  // 记录查询
+  const isChannel = false; // 终端查询
+  db.queries.push({ sn: input, time: new Date().toLocaleString(), type: 'terminal' });
+  const queryCount = db.queries.filter(q => q.sn === input).length;
+  const firstQuery = db.queries.find(q => q.sn === input);
+
+  let html = '<div class="result-box success">';
+  html += '<strong>✅ 正品验证通过</strong><br><br>';
+  html += '<div style="display:flex; flex-wrap:wrap; gap:16px;">';
+  html += '<div><strong>产品型号：</strong>' + getProductName(record.product) + '</div>';
+  html += '<div><strong>硬件版本：</strong>HV0' + record.version + '</div>';
+  html += '<div><strong>生产批次：</strong>' + record.batch + '</div>';
+  html += '<div><strong>生产厂家：</strong>' + getFactoryName(record.factory) + '</div>';
+  html += '</div><br>';
+
+  if (record.status === 'refurb') {
+    html += '<div style="color:var(--orange); font-weight:700;">🔄 官方翻新机</div>';
+    html += '<div>翻新日期：' + (record.refurbDate || '2026-06') + '</div>';
+    html += '<div>保修期：12个月（自翻新之日起）</div><br>';
+  } else if (record.status === 'void') {
+    html += '<div style="color:var(--red); font-weight:700;">❌ 该 SN 已注销（原机已翻新）</div><br>';
+  } else {
+    html += '<div><strong>设备状态：</strong><span style="color:var(--green);">全新正品</span></div><br>';
+  }
+
+  html += '<div style="font-size:.9rem; color:var(--sub);">';
+  html += '首次查询：' + (firstQuery ? firstQuery.time : '本次') + '<br>';
+  html += '查询次数：' + queryCount + ' 次（终端）';
+  html += '</div>';
+  html += '</div>';
+
+  resultDiv.innerHTML = html;
+}
+
+function simulateScan(role) {
+  const resultDiv = document.getElementById('scanResult');
+  const testSN = 'SXZQ26AX8K2M97R';
+  const record = db.records.find(r => r.sn === testSN);
+
+  let html = '<div class="result-box info" style="margin-top:16px;">';
+  html += '<strong>📱 模拟场景：';
+  if (role === 'dealer') html += '经销商收货验真';
+  else if (role === 'customer') html += '终端用户查询';
+  else html += '售后维修溯源';
+  html += '</strong><br><br>';
+
+  if (role === 'dealer') {
+    html += '<div style="font-size:.9rem; line-height:1.8;">';
+    html += '① 经销商收到整箱货物，核对随货 SN 清单<br>';
+    html += '② 登录 UNISIMG 官方后台 → 批量导入 SN 清单<br>';
+    html += '③ 系统返回：<strong>全部正品</strong>（5秒完成）<br>';
+    html += '④ 下载 PDF 验真报告存档<br><br>';
+    html += '<span style="color:var(--sub);">⚠ 渠道核验记录仅后台可见，不计入终端首次查询</span>';
+    html += '</div>';
+  } else if (role === 'customer') {
+    html += '<div style="background:#fff; border-radius:8px; padding:16px; border:1px solid var(--border);">';
+    html += '<div style="font-size:1.1rem; color:var(--green); font-weight:700;">✅ 正品</div><br>';
+    html += '产品型号：' + (record ? getProductName(record.product) : 'KA扫描仪') + '<br>';
+    html += '硬件版本：HV02<br>';
+    html += '出厂批次：2026上半年<br>';
+    html += '保修截止：2028-06<br><br>';
+    html += '<span style="color:var(--sub);">首次查询：本次<br>查询次数：1 次</span>';
+    html += '</div>';
+  } else {
+    html += '<div style="font-size:.9rem; line-height:1.8;">';
+    html += '① 售后扫描机身 DataMatrix → 提取 SN：<strong>' + testSN + '</strong><br>';
+    html += '② 查询数据库：<br>';
+    html += '&nbsp;&nbsp;• 出厂日期：2026-06<br>';
+    html += '&nbsp;&nbsp;• 出货经销商：深圳XX科技<br>';
+    html += '&nbsp;&nbsp;• 保修状态：在保<br>';
+    html += '&nbsp;&nbsp;• 历史维修：无<br>';
+    html += '③ 判定：正品，可正常保修<br><br>';
+    html += '<span style="color:var(--sub);">镭雕 SN 不可篡改，售后判定有据可依</span>';
+    html += '</div>';
+  }
+
+  html += '</div>';
+  resultDiv.innerHTML = html;
+}
+
+// ========== 官翻机 ==========
+function processRefurb() {
+  const oldSN = document.getElementById('refurbOldSN').value.trim().toUpperCase();
+  const resultDiv = document.getElementById('refurbResult');
+
+  if (!oldSN) {
+    resultDiv.innerHTML = '<div class="result-box error">请输入原正品 SN</div>';
+    return;
+  }
+
+  const oldRecord = db.records.find(r => r.sn === oldSN);
+  if (!oldRecord) {
+    resultDiv.innerHTML = '<div class="result-box error">数据库中未找到该 SN，请确认输入正确</div>';
+    return;
+  }
+
+  if (oldRecord.status === 'refurb') {
+    resultDiv.innerHTML = '<div class="result-box warning">该设备已经是翻新机状态</div>';
+    return;
+  }
+
+  // 生成翻新机 SN：第4位改为 R
+  const refurbPrefix = oldRecord.product.substring(0, 3) + 'R';
+  const refurbSN = buildSN(refurbPrefix, oldRecord.version, oldRecord.batch, 999);
+
+  // 更新原记录
+  oldRecord.status = 'void';
+
+  // 创建翻新记录
+  const refurbRecord = {
+    sn: refurbSN,
+    product: oldRecord.product,
+    version: oldRecord.version,
+    batch: oldRecord.batch,
+    factory: oldRecord.factory,
+    status: 'refurb',
+    refurbDate: new Date().toISOString().substring(0, 7),
+    originalSN: oldSN
+  };
+  db.records.push(refurbRecord);
+
+  let html = '<div class="result-box success">';
+  html += '<strong>✅ 官翻机处理完成</strong><br><br>';
+  html += '<div style="display:flex; flex-wrap:wrap; gap:20px;">';
+  html += '<div style="flex:1; min-width:200px;">';
+  html += '<div style="color:var(--red); font-weight:700; margin-bottom:8px;">原 SN（已注销）</div>';
+  html += '<div class="sn-display" style="font-size:1rem; background:#FEE2E2; color:#991B1B;">' + oldSN + '</div>';
+  html += '<div style="font-size:.82rem; color:var(--sub); margin-top:4px;">状态：已翻新注销，停止对外查询</div>';
+  html += '</div>';
+  html += '<div style="font-size:1.5rem; display:flex; align-items:center;">→</div>';
+  html += '<div style="flex:1; min-width:200px;">';
+  html += '<div style="color:var(--orange); font-weight:700; margin-bottom:8px;">翻新 SN（新生成）</div>';
+  html += '<div class="sn-display" style="font-size:1rem; background:#FEF3C7; color:#92400E;">' + refurbSN + '</div>';
+  html += '<div style="font-size:.82rem; color:var(--sub); margin-top:4px;">状态：官方翻新机，独立保修</div>';
+  html += '</div>';
+  html += '</div><br>';
+  html += '<div style="font-size:.9rem; color:var(--sub);">';
+  html += '翻新机 SN 规则：产品代码第4位固定为 R（Refurbished），与原品区分。<br>';
+  html += '终端查询翻新机时，页面主动显示"官方翻新机"标识及翻新保修政策。';
+  html += '</div>';
+  html += '</div>';
+
+  resultDiv.innerHTML = html;
+}
+
+// ========== 数据库视图 ==========
+function renderDatabase() {
+  const tbody = document.getElementById('dbTableBody');
+  if (db.records.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#9CA3AF;">暂无记录</td></tr>';
+    return;
+  }
+
+  let html = '';
+  db.records.forEach(r => {
+    const termQueries = db.queries.filter(q => q.sn === r.sn).length;
+    const chanQueries = db.channelQueries.filter(q => q.sn === r.sn).length;
+
+    let statusTag = '<span class="tag tag-new">全新</span>';
+    if (r.status === 'refurb') statusTag = '<span class="tag tag-refurb">翻新</span>';
+    if (r.status === 'void') statusTag = '<span class="tag tag-void">已注销</span>';
+
+    html += '<tr>';
+    html += '<td><code>' + r.sn + '</code></td>';
+    html += '<td>' + getProductName(r.product) + '</td>';
+    html += '<td>HV0' + r.version + '</td>';
+    html += '<td>' + getFactoryName(r.factory) + '</td>';
+    html += '<td>' + statusTag + '</td>';
+    html += '<td>' + termQueries + '</td>';
+    html += '<td>' + chanQueries + '</td>';
+    html += '</tr>';
+  });
+  tbody.innerHTML = html;
+}
+
+// 初始化
+console.log('UNISIMG SN Crypto Demo loaded. 预置 ' + db.records.length + ' 条测试数据。');
+</script>
+
+</body>
+</html>
